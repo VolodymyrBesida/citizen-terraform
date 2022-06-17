@@ -1,11 +1,11 @@
 # resources
-    resource_group_name        = "geo-group"
-    resource_group_location    = "North Europe"
+    resource_group_name        = "geo-group-demo"
+    resource_group_location    = "Canada Central"
 
 # services
-    service_plan_name          = "geo-plan"
+    service_plan_name          = "ASP-geogroup-973a"
     service_plan_os_type       = "Linux"
-    service_plan_sku_name      = "P1v2"
+    service_plan_sku_name      = "B1"
 
 # webapp
     webapp_name                                  = "web-geo-citizen"

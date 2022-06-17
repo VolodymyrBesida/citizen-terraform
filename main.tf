@@ -9,7 +9,7 @@ terraform {
        resource_group_name = "geo-group"
        storage_account_name = "citizentorage"
        container_name = "tfstate"
-       key = "rWsef/7Kg6CKcwO+jv7b5Km3CSQ7uC67bkxKmbai3O7ikuKReJg0D0sEvbt3+tG9F+SQU6VFA9uZ+AStHVv8ZA=="
+       key = "0ftDgYM9DcG+1NrMeLb62nMb9MICA+kvxaeky6gNCbR6YGhrXTbYZJZtYB9a5nh44ttGCNaxQ+jt+ASt9u0W6g=="
        use_azuread_auth = true
        subscription_id = "d234834b-33d7-47c3-b9c5-ded4cbc51e51"
        tenant_id = "c7594211-196a-4f40-8291-c5d79c3d1f9f"
@@ -44,11 +44,22 @@ terraform {
         }
     }
 
+    resource "azurerm_resource_group" "geo-group-additional" {
+        name     = "geo-group-additional"
+        location = "Central US"
+
+        tags = {
+            environment = var.env
+            managedBy   = "terraform"
+            gitrepo     = var.repository_url
+        }
+    }
+
 # storage account
     resource "azurerm_storage_account" "storage-account" {
         name                     = module.naming.storage_account.name_unique
-        resource_group_name      = azurerm_resource_group.geo-group.name
-        location                 = azurerm_resource_group.geo-group.location
+        resource_group_name      = azurerm_resource_group.geo-group-additional.name
+        location                 = azurerm_resource_group.geo-group-additional.location
         account_tier             = "Standard"
         account_replication_type = "LRS"
 
@@ -68,8 +79,8 @@ terraform {
 # service plan
     resource "azurerm_service_plan" "app-plan" {
         name                = var.service_plan_name
-        resource_group_name = azurerm_resource_group.geo-group.name
-        location            = azurerm_resource_group.geo-group.location
+        resource_group_name = azurerm_resource_group.geo-group-additional.name
+        location            = azurerm_resource_group.geo-group-additional.location
         os_type             = var.service_plan_os_type
         sku_name            = var.service_plan_sku_name #change app sku name
 
@@ -85,12 +96,12 @@ terraform {
         resource "azurerm_postgresql_flexible_server" "postgre-flexible-server" {
             name                   = var.postgre-flexible-server-name
             resource_group_name    = azurerm_resource_group.geo-group.name
-            location               = azurerm_resource_group.geo-group.location
+            location               = "East US" # azurerm_resource_group.geo-group.location
             version                = var.postgre-flexible-server-version
             administrator_login    = var.postgre-flexible-server-adminlogin
             administrator_password = var.postgre-flexible-server-adminpassword
             storage_mb             = var.postgre-flexible-server-storage-mb
-            sku_name               = var.postgre-flexible-server-sku-name
+            sku_name               = "GP_Standard_D4s_v3" # var.postgre-flexible-server-sku-name
 
             tags = {
                 environment = var.env
@@ -118,8 +129,8 @@ terraform {
 # web app
     resource "azurerm_linux_web_app" "webapp" {
         name                = var.webapp_name
-        resource_group_name = azurerm_resource_group.geo-group.name
-        location            = azurerm_service_plan.app-plan.location
+        resource_group_name = azurerm_resource_group.geo-group-additional.name
+        location            = "Central US" # azurerm_service_plan.app-plan.location
         service_plan_id     = azurerm_service_plan.app-plan.id
 
         site_config {
@@ -133,7 +144,8 @@ terraform {
         connection_string {
             name = "Database"
             type = "PostgreSQL"
-            value = "Server=tcp:azurerm_postgresql_flexible_server.postgre-flexible-server-database.fully_qualified_domain_name,5432;Database=azurerm_postgresql_flexible_server_database.postgre-flexible-server-database.name;User ID=azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_login;Password=azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_password;Trusted_Connection=False;Encrypt=True;"
+            value = "postgres://postgres:${azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_password}@demodb-server.postgres.database.azure.com/postgres?sslmode=require"
+            #value = "Server=tcp:demodb-server.postgres.database.azure.com,5432;Database=${var.postgre-flexible-server-name};User ID=${azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_login};Password='${azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_password}';Trusted_Connection=False;Encrypt=True;"
         }
 
         storage_account {
