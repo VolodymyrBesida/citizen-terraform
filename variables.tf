@@ -111,9 +111,14 @@
           description = "Name of firewall rule"
         }
 
-        variable postgre-flexible-server-firewall-rule-allow-all-get-address {
+        variable postgre-flexible-server-firewall-rule-allow-all-get-address-start {
           type        = string
-          description = "Allow all addresses to connect to postgresql flexible server"
+          description = "Allow all addresses to connect to postgresql flexible server what starts from"
+        }
+
+        variable postgre-flexible-server-firewall-rule-allow-all-get-address-end {
+          type        = string
+          description = "Allow all addresses to connect to postgresql flexible server what ends at"
         }
         
         

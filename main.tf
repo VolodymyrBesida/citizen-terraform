@@ -82,7 +82,7 @@ terraform {
         resource_group_name = azurerm_resource_group.geo-group-additional.name
         location            = azurerm_resource_group.geo-group-additional.location
         os_type             = var.service_plan_os_type
-        sku_name            = var.service_plan_sku_name #change app sku name
+        sku_name            = var.service_plan_sku_name
 
         tags = {
             environment = var.env
@@ -96,12 +96,12 @@ terraform {
         resource "azurerm_postgresql_flexible_server" "postgre-flexible-server" {
             name                   = var.postgre-flexible-server-name
             resource_group_name    = azurerm_resource_group.geo-group.name
-            location               = "East US" # azurerm_resource_group.geo-group.location
+            location               = "East US"
             version                = var.postgre-flexible-server-version
             administrator_login    = var.postgre-flexible-server-adminlogin
             administrator_password = var.postgre-flexible-server-adminpassword
             storage_mb             = var.postgre-flexible-server-storage-mb
-            sku_name               = "GP_Standard_D4s_v3" # var.postgre-flexible-server-sku-name
+            sku_name               = "GP_Standard_D4s_v3"
 
             tags = {
                 environment = var.env
@@ -122,15 +122,15 @@ terraform {
         resource "azurerm_postgresql_flexible_server_firewall_rule" "postgre-flexible-server-firewall-rule" {
             name             = var.postgre-flexible-server-firewall-rule-name
             server_id        = azurerm_postgresql_flexible_server.postgre-flexible-server.id
-            start_ip_address = var.postgre-flexible-server-firewall-rule-allow-all-get-address
-            end_ip_address   = var.postgre-flexible-server-firewall-rule-allow-all-get-address
+            start_ip_address = var.postgre-flexible-server-firewall-rule-allow-all-get-address-start
+            end_ip_address   = var.postgre-flexible-server-firewall-rule-allow-all-get-address-end
         }
 
 # web app
     resource "azurerm_linux_web_app" "webapp" {
         name                = var.webapp_name
         resource_group_name = azurerm_resource_group.geo-group-additional.name
-        location            = "Central US" # azurerm_service_plan.app-plan.location
+        location            = "Central US"
         service_plan_id     = azurerm_service_plan.app-plan.id
 
         site_config {
@@ -145,7 +145,6 @@ terraform {
             name = "Database"
             type = "PostgreSQL"
             value = "postgres://postgres:${azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_password}@demodb-server.postgres.database.azure.com/postgres?sslmode=require"
-            #value = "Server=tcp:demodb-server.postgres.database.azure.com,5432;Database=${var.postgre-flexible-server-name};User ID=${azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_login};Password='${azurerm_postgresql_flexible_server.postgre-flexible-server.administrator_password}';Trusted_Connection=False;Encrypt=True;"
         }
 
         storage_account {

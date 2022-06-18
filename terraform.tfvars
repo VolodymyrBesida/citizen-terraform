@@ -29,7 +29,8 @@
         postgre-flexible-server-database-charset     = "utf8"
     # firewall
         postgre-flexible-server-firewall-rule-name                     = "allow-all-connections"
-        postgre-flexible-server-firewall-rule-allow-all-get-address    = "0.0.0.0"
+        postgre-flexible-server-firewall-rule-allow-all-get-address-start    = "0.0.0.0"
+        postgre-flexible-server-firewall-rule-allow-all-get-address-end    = "255.255.255.255"
 
 # project variables
     project_name = "citizen"
